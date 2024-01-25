@@ -1,0 +1,24 @@
+{
+  "name": "TinySMS",
+  "version": "0.0.1",
+  "description": "A simple SMS library for GSM modules with unicode support",
+  "keywords": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vahidtvj/TinySMS.git"
+  },
+  "authors": [
+    {
+      "name": "vahidtvj",
+      "url": "https://github.com/vahidtvj",
+      "maintainer": true
+    }
+  ],
+  "license": "LGPL-3.0",
+  "homepage": "https://github.com/vahidtvj/TinySMS",
+  "dependencies": {
+    "vshymanskyy/TinyGSM": "*"
+  },
+  "frameworks": ["arduino"],
+  "platforms": "*"
+}
