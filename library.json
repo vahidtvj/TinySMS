@@ -17,7 +17,8 @@
   "license": "LGPL-3.0",
   "homepage": "https://github.com/vahidtvj/TinySMS",
   "dependencies": {
-    "vshymanskyy/TinyGSM": "*"
+    "vshymanskyy/TinyGSM": "^0.11.7",
+    "ivanseidel/LinkedList": "0.0.0-alpha+sha.dac3874d28"
   },
   "frameworks": ["arduino"],
   "platforms": "*"

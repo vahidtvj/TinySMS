@@ -18,7 +18,7 @@
 #define SerialAT Serial2
 // #define TINY_GSM_DEBUG SerialMon
 // #define TINY_GSM_RX_BUFFER 650
-#include <StreamDebugger.h>
+// #include <StreamDebugger.h>
 #include <TinyGsmClient.h>
 #include <TinySMS.h>
 // StreamDebugger debugger(SerialAT, SerialMon);
