@@ -7,7 +7,6 @@
  */
 
 #include <Arduino.h>
-
 #define TINY_GSM_MODEM_SIM800
 // This may be needed for a fast processor at a slow baud rate.
 // #define TINY_GSM_YIELD() \

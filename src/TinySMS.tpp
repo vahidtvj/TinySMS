@@ -8,12 +8,11 @@ TinySMS::TinySMS(TinyGsm &modem)
 void TinySMS::handle()
 {
     String data;
-    this->modem->waitResponse(this->handleTimeout, data, "\r\n");
-
-    if (data.indexOf("+CMTI") == -1)
+    this->modem->waitResponse(this->handleTimeout, data, GF("\r\n"));
+    if (data.indexOf(GF("+CMTI")) == -1)
         return;
 
-    data = data.substring(data.indexOf("+CMTI"));
+    data = data.substring(data.indexOf(GF("+CMTI")));
     uint8_t index = strtol(data.substring(data.indexOf(',') + 1).c_str(), NULL, 10);
 
     SMS sms;
@@ -26,13 +25,13 @@ void TinySMS::handle()
 
 void TinySMS::begin()
 {
-    this->modem->waitResponse("Call Ready");
-    this->modem->waitResponse("SMS Ready");
+    this->modem->waitResponse(GF("Call Ready"));
+    this->modem->waitResponse(GF("SMS Ready"));
     // *set message format (pdu mode)
-    this->modem->sendAT(F("+CMGF=0"));
+    this->modem->sendAT(GF("+CMGF=0"));
     this->modem->waitResponse();
     // *set character set
-    this->modem->sendAT(F("+CSCS=\"UCS2\""));
+    this->modem->sendAT(GF("+CSCS=\"UCS2\""));
     this->modem->waitResponse();
     // *set New SMS Message Indications
     // buffer in TA when online
@@ -41,13 +40,8 @@ void TinySMS::begin()
     // No SMS-STATUS-REPORTs are routed to the TE
     // resend buffer after mode change
     // this->modem->sendAT(F("+CNMI=2,2,0,0,0"));
-    this->modem->sendAT(F("+CNMI=2,1,0,0,0"));
+    this->modem->sendAT(GF("+CNMI=2,1,0,0,0"));
     this->modem->waitResponse();
-    // // set text mode params
-    // // ss->println(F("AT+CSMP=17,168,0,8"));
-    // ss->println("AT+CSMP=49,167,0,8");
-    // modem.sendAT(F("+CSMP=17,167,0,8"));
-    // modem.waitResponse();
 }
 
 bool TinySMS::readRAW(uint8_t index, String &data)
@@ -55,9 +49,9 @@ bool TinySMS::readRAW(uint8_t index, String &data)
     this->modem->waitResponse();
     this->modem->sendAT("+CMGR=" + String(index));
     this->modem->waitResponse(this->readTimeout, data);
-    if (data.indexOf("+CMGR:") == -1)
+    if (data.indexOf(GF("+CMGR:")) == -1)
         return false;
-    data = data.substring(data.indexOf("+CMGR:") + 7);
+    data = data.substring(data.indexOf(GF("+CMGR:")) + 7);
     return true;
 }
 
@@ -72,7 +66,6 @@ bool TinySMS::read(uint8_t index, SMS &sms)
 
 void TinySMS::readAll(void (*callBack)(SMS))
 {
-    bool success = true;
     SMS sms;
     int i = 1;
     while (read(i, sms))
@@ -87,13 +80,13 @@ void TinySMS::readAll(void (*callBack)(SMS))
 
 void TinySMS::removeRead()
 {
-    this->modem->sendAT(F("+CMGDA=\"DEL READ\""));
+    this->modem->sendAT(GF("+CMGDA=\"DEL READ\""));
     this->modem->waitResponse();
 }
 
 void TinySMS::removeAll()
 {
-    this->modem->sendAT(F("+CMGDA=\"DEL ALL\""));
+    this->modem->sendAT(GF("+CMGDA=\"DEL ALL\""));
     this->modem->waitResponse();
 }
 

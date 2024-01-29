@@ -1,12 +1,6 @@
 #pragma once
 #include <Arduino.h>
 #include <LinkedList.h>
-
-#define TINY_GSM_MODEM_SIM800 // TODO remove
-
-#ifndef TINY_GSM_MODEM_SIM800
-#error "Please define GSM modem model"
-#endif
 #include <TinyGsmClient.h>
 
 class SMS
@@ -25,8 +19,8 @@ public:
 class TinySMS
 {
 private:
-    uint readTimeout = 3000;
-    uint handleTimeout = 1000;
+    uint32_t readTimeout = 3000;
+    uint32_t handleTimeout = 1000;
     TinyGsm *modem;
     LinkedList<SMS> partialSMS;
     bool parseMultipart(SMS &sms);
@@ -50,3 +44,7 @@ public:
     void handle();
     void (*newSMSCallback)(SMS);
 };
+
+#include "helper.tpp"
+#include "functions.tpp"
+#include "TinySMS.tpp"
