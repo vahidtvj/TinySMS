@@ -45,6 +45,10 @@ String TinySMS::parseNumber(String &pdu)
     {
         // numeric
         swap(data);
+        // Odd length numbers are padded with an F in the end.
+        if (isOdd && data[data.length() - 1] == 'F') {
+          data = data.substring(0, data.length() - 1);
+        }
         number = "+" + data;
     }
 
