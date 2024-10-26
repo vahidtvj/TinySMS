@@ -11,7 +11,7 @@ public:
     String sender;
     String message;
     String date;
-    char ref;
+    uint16_t ref;
     uint8_t part = 1;
     uint8_t totalParts = 1;
 };

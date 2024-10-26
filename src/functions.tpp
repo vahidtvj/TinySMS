@@ -105,6 +105,14 @@ SMS TinySMS::parsePDU(String data)
         sms.part = strtol(pdu.substring(10, 12).c_str(), NULL, 16);
         message = decodeUnicode(pdu.substring(12));
     }
+    else if (pdu.substring(0, 6) == "060804")
+    {
+        // multipart with 16-bit reference
+        sms.ref = strtol(pdu.substring(6, 10).c_str(), NULL, 16);
+        sms.totalParts = strtol(pdu.substring(10, 12).c_str(), NULL, 16);
+        sms.part = strtol(pdu.substring(12, 14).c_str(), NULL, 16);
+        message = decodeUnicode(pdu.substring(14));
+    }
     else
         message = decodeUnicode(pdu);
 
