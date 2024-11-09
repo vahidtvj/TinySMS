@@ -37,11 +37,12 @@ public:
     void begin();
     bool read(uint8_t index, SMS &sms);
     bool readRAW(uint8_t index, String &data);
-    void readAll(void (*callBack)(SMS));
+    void readAll(void (*callBack)(SMS), bool remove = false);
     void remove(uint8_t index);
     void removeRead();
     void removeAll();
     void handle();
+    void clearPartial();
     void (*newSMSCallback)(SMS);
 };
 
