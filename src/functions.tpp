@@ -5,17 +5,17 @@ String TinySMS::parseGSM7(String data)
     String message = "";
     char temp = 0;
     int j = 0;
+    String gsm7bit = "@.$.......\n..\r..._......... .... !\"#.%&'()*+,-./0123456789:;<=>?.ABCDEFGHIJKLMNOPQRSTUVWXYZ......abcdefghijklmnopqrstuvwxyz.....";
     for (int i = 0; i < data.length(); i += 2)
     {
         uint8_t o = strtol(data.substring(i, i + 2).c_str(), nullptr, 16);
 
         char s = ((o << j) & 127) | temp;
         temp = o >> (7 - j);
-
-        message += s;
+        message += gsm7bit.substring(s, s + 1);
         if (++j == 7)
         {
-            message += temp;
+            message += gsm7bit.substring(temp, temp + 1);
             temp = 0;
             j = 0;
         }
@@ -79,12 +79,14 @@ SMS TinySMS::parsePDU(String data)
     String sender;
     String message;
     String date;
-
     int i = data.indexOf('\n');
     String pdu = data.substring(i + 1, data.indexOf('\n', i + 1) - 1);
 
     uint8_t size = strtol(pdu.substring(0, 2).c_str(), NULL, 16);
     pdu = pdu.substring(2 + size * 2);
+    char TPDU = (char)strtol(pdu.substring(0, 2).c_str(), NULL, 16);
+    bool hasMoreMessage = !bitRead(TPDU, 2);
+    bool hasHeader = bitRead(TPDU, 6);
     pdu = pdu.substring(2);
 
     // parse number
@@ -97,25 +99,32 @@ SMS TinySMS::parsePDU(String data)
     // parse date
     date = parseDate(pdu.substring(0, 14));
     pdu = pdu.substring(16);
-
     // parse message
+    if (hasHeader)
+    {
+        uint8_t headerOctets = strtol(pdu.substring(0, 2).c_str(), NULL, 16);
+        if (headerOctets == 5)
+        {
+            sms.ref = pdu.substring(6, 8);
+            sms.totalParts = strtol(pdu.substring(8, 10).c_str(), NULL, 16);
+            sms.part = strtol(pdu.substring(10, 12).c_str(), NULL, 16);
+            pdu = pdu.substring(12);
+        }
+        else
+        {
+            sms.ref = pdu.substring(6, 10);
+            sms.totalParts = strtol(pdu.substring(10, 12).c_str(), NULL, 16);
+            sms.part = strtol(pdu.substring(12, 14).c_str(), NULL, 16);
+            pdu = pdu.substring(14);
+        }
+    }
     if (!isUnicode)
         message = parseGSM7(pdu);
-    else if (pdu.substring(0, 6) == "050003")
-    {
-        // multipart
-        sms.ref = strtol(pdu.substring(6, 8).c_str(), NULL, 16);
-        sms.totalParts = strtol(pdu.substring(8, 10).c_str(), NULL, 16);
-        sms.part = strtol(pdu.substring(10, 12).c_str(), NULL, 16);
-        message = decodeUnicode(pdu.substring(12));
-    }
     else
         message = decodeUnicode(pdu);
-
     sms.sender = sender;
     sms.date = date;
     sms.message = message;
-
     return sms;
 }
 
