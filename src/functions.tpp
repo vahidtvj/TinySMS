@@ -1,21 +1,21 @@
 #include "TinySMS.h"
 
-String TinySMS::parseGSM7(String data)
+String TinySMS::parseGSM7(String data, uint8_t paddingBits)
 {
     String message = "";
     char temp = 0;
-    int j = 0;
-    String gsm7bit = "@.$.......\n..\r..._......... .... !\"#.%&'()*+,-./0123456789:;<=>?.ABCDEFGHIJKLMNOPQRSTUVWXYZ......abcdefghijklmnopqrstuvwxyz.....";
+    int j = (7 - paddingBits) % 7;
+
     for (int i = 0; i < data.length(); i += 2)
     {
         uint8_t o = strtol(data.substring(i, i + 2).c_str(), nullptr, 16);
-
         char s = ((o << j) & 127) | temp;
         temp = o >> (7 - j);
-        message += gsm7bit.substring(s, s + 1);
+        if (paddingBits == 0 || i != 0)
+            message += GSM7Lookup.substring(s, s + 1);
         if (++j == 7)
         {
-            message += gsm7bit.substring(temp, temp + 1);
+            message += GSM7Lookup.substring(temp, temp + 1);
             temp = 0;
             j = 0;
         }
@@ -99,6 +99,8 @@ SMS TinySMS::parsePDU(String data)
     // parse date
     date = parseDate(pdu.substring(0, 14));
     pdu = pdu.substring(16);
+
+    uint8_t padding = 0;
     // parse message
     if (hasHeader)
     {
@@ -117,11 +119,20 @@ SMS TinySMS::parsePDU(String data)
             sms.part = strtol(pdu.substring(12, 14).c_str(), NULL, 16);
             pdu = pdu.substring(14);
         }
+        if (!isUnicode)
+        {
+            // UDH padding when using gsm7
+            // +1 because header length octet is also included
+            int udhBits = (headerOctets + 1) * 8;
+            padding = (7 - (udhBits % 7)) % 7;
+        }
     }
+
     if (!isUnicode)
-        message = parseGSM7(pdu);
+        message = parseGSM7(pdu, padding);
     else
         message = decodeUnicode(pdu);
+
     sms.sender = sender;
     sms.date = date;
     sms.message = message;
