@@ -1,7 +1,32 @@
 #include "TinySMS.h"
 
+String parseEscape(char data)
+{
+    if (data == 0x0A)
+        return "";
+    else if (data == 0x14)
+        return "^";
+    else if (data == 0x28)
+        return "{";
+    else if (data == 0x29)
+        return "}";
+    else if (data == 0x2F)
+        return "\\";
+    else if (data == 0x3C)
+        return "[";
+    else if (data == 0x3D)
+        return "~";
+    else if (data == 0x3E)
+        return "]";
+    else if (data == 0x40)
+        return "|";
+    else if (data == 0x65)
+        return "€";
+    return "";
+}
 String TinySMS::parseGSM7(String data, uint8_t paddingBits)
 {
+    bool escape = false;
     String message = "";
     char temp = 0;
     int j = (7 - paddingBits) % 7;
@@ -12,10 +37,32 @@ String TinySMS::parseGSM7(String data, uint8_t paddingBits)
         char s = ((o << j) & 127) | temp;
         temp = o >> (7 - j);
         if (paddingBits == 0 || i != 0)
-            message += GSM7Lookup.substring(s, s + 1);
+        {
+            if (escape == true)
+            {
+                message += parseEscape(s);
+                escape = false;
+            }
+            else
+            {
+                if (s == 0x1B)
+                    escape = true;
+                message += GSM7Lookup[s];
+            }
+        }
         if (++j == 7)
         {
-            message += GSM7Lookup.substring(temp, temp + 1);
+            if (escape == true)
+            {
+                message += parseEscape(temp);
+                escape = false;
+            }
+            else
+            {
+                if (temp == 0x1B)
+                    escape = true;
+                message += GSM7Lookup[temp];
+            }
             temp = 0;
             j = 0;
         }
@@ -46,8 +93,9 @@ String TinySMS::parseNumber(String &pdu)
         // numeric
         swap(data);
         // Odd length numbers are padded with an F in the end.
-        if (isOdd && data[data.length() - 1] == 'F') {
-          data = data.substring(0, data.length() - 1);
+        if (isOdd && data[data.length() - 1] == 'F')
+        {
+            data = data.substring(0, data.length() - 1);
         }
         number = "+" + data;
     }
