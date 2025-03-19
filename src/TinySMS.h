@@ -29,7 +29,7 @@ private:
     SMS parsePDU(String data);
     String parseDate(String data);
     String parseNumber(String &pdu);
-    String parseGSM7(String data, uint8_t paddingBits = 0);
+    String parseGSM7(String data, uint8_t paddingBits = 0, uint8_t septetCount = 0);
     void isort(uint8_t *a, int n);
     void swap(String &data);
     String decodeUnicode(String data);

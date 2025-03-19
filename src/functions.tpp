@@ -24,12 +24,13 @@ String parseEscape(char data)
         return "€";
     return "";
 }
-String TinySMS::parseGSM7(String data, uint8_t paddingBits)
+String TinySMS::parseGSM7(String data, uint8_t paddingBits, uint8_t septetCount)
 {
     bool escape = false;
     String message = "";
     char temp = 0;
     int j = (7 - paddingBits) % 7;
+    uint8_t count = 0;
 
     for (int i = 0; i < data.length(); i += 2)
     {
@@ -47,8 +48,11 @@ String TinySMS::parseGSM7(String data, uint8_t paddingBits)
             {
                 if (s == 0x1B)
                     escape = true;
-                message += GSM7Lookup[s];
+                else
+                    message += GSM7Lookup[s];
             }
+            if (++count == septetCount)
+                break;
         }
         if (++j == 7)
         {
@@ -61,10 +65,13 @@ String TinySMS::parseGSM7(String data, uint8_t paddingBits)
             {
                 if (temp == 0x1B)
                     escape = true;
-                message += GSM7Lookup[temp];
+                else
+                    message += GSM7Lookup[temp];
             }
             temp = 0;
             j = 0;
+            if (++count == septetCount)
+                break;
         }
     }
     return message;
@@ -146,7 +153,11 @@ SMS TinySMS::parsePDU(String data)
 
     // parse date
     date = parseDate(pdu.substring(0, 14));
-    pdu = pdu.substring(16);
+    pdu = pdu.substring(14);
+
+    // parse message size
+    uint8_t messageSeptets = strtol(pdu.substring(0, 2).c_str(), NULL, 16);
+    pdu = pdu.substring(2);
 
     uint8_t padding = 0;
     // parse message
@@ -173,11 +184,13 @@ SMS TinySMS::parsePDU(String data)
             // +1 because header length octet is also included
             int udhBits = (headerOctets + 1) * 8;
             padding = (7 - (udhBits % 7)) % 7;
+
+            messageSeptets -= (udhBits / 7) + (padding > 0);
         }
     }
 
     if (!isUnicode)
-        message = parseGSM7(pdu, padding);
+        message = parseGSM7(pdu, padding, messageSeptets);
     else
         message = decodeUnicode(pdu);
 
