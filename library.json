@@ -1,6 +1,6 @@
 {
   "name": "TinySMS",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A simple SMS library for GSM modules with unicode support",
   "keywords": "arduino, sms, sim800, sim900, modem, unicode, concatenated sms, multipart sms, esp32",
   "repository": {
@@ -20,6 +20,8 @@
     "vshymanskyy/TinyGSM": "^0.11.7",
     "ivanseidel/LinkedList": "0.0.0-alpha+sha.dac3874d28"
   },
-  "frameworks": ["arduino"],
+  "frameworks": [
+    "arduino"
+  ],
   "platforms": "*"
 }
